@@ -58,6 +58,15 @@ jobs:
 
       - name: Coverage (threshold gate)
         run: npm run test:cov
+      - name: Debug coverage files
+        run: |
+          echo "---- coverage folders ----"
+          ls -la
+          ls -la src || true
+          ls -la coverage || true
+          ls -la src/coverage || true
+          echo "---- lcov locations ----"
+          find . -name lcov.info -maxdepth 4 || true
 
       - name: SonarCloud Scan
         uses: SonarSource/sonarcloud-github-action@v2

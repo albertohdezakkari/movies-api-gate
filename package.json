@@ -73,6 +73,10 @@
       "!main.ts",
       "!**/*.module.ts"
     ],
+    "coverageReporters": [
+      "text",
+      "lcov"
+    ],
     "coverageThreshold": {
       "global": {
         "lines": 70,

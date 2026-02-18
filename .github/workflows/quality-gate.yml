@@ -1,70 +1,75 @@
 name: Quality Gate
 
 on:
-    push:
-        branches: ["main", "master", "develop"]
-    pull_request:
-        branches: ["main", "master", "develop"]
+  push:
+    branches: ["main", "master", "develop"]
+  pull_request:
+    branches: ["main", "master", "develop"]
 
 jobs:
-    quality:
-        runs-on: ubuntu-latest
+  quality:
+    runs-on: ubuntu-latest
 
-        services:
-            postgres:
-                image: postgres:16
-                env:
-                    POSTGRES_USER: postgres
-                    POSTGRES_PASSWORD: postgres
-                    POSTGRES_DB: movies
-                ports:
-                    - 5432:5432
-                options: >-
-                    --health-cmd="pg_isready -U postgres -d movies"
-                    --health-interval=5s
-                    --health-timeout=5s
-                    --health-retries=20
-
+    services:
+      postgres:
+        image: postgres:16
         env:
-            NODE_ENV: test
-            DB_HOST: localhost
-            DB_PORT: "5432"
-            DB_USER: postgres
-            DB_PASS: postgres
-            DB_NAME: movies
-            DB_SSL: "false"
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: movies
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd="pg_isready -U postgres -d movies"
+          --health-interval=5s
+          --health-timeout=5s
+          --health-retries=20
 
-        steps:
-            - name: Checkout
-              uses: actions/checkout@v4
+    env:
+      NODE_ENV: test
+      DB_HOST: localhost
+      DB_PORT: "5432"
+      DB_USER: postgres
+      DB_PASS: postgres
+      DB_NAME: movies
+      DB_SSL: "false"
 
-            - name: Use Node.js 20
-              uses: actions/setup-node@v4
-              with:
-                  node-version: 20
-                  cache: "npm"
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
 
-            - name: Install
-              run: npm ci
+      - name: Use Node.js 20
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: "npm"
 
-            - name: Lint
-              run: npm run lint
+      - name: Install
+        run: npm ci
 
-            - name: Build
-              run: npm run build
+      - name: Lint
+        run: npm run lint
 
-            - name: Unit tests
-              run: npm test
+      - name: Build
+        run: npm run build
 
-            - name: Coverage (threshold gate)
-              run: npm run test:cov
+      - name: Unit tests
+        run: npm test
 
-            - name: E2E / Contract tests
-              run: npm run test:e2e
+      - name: Coverage (threshold gate)
+        run: npm run test:cov
 
-            - name: Start server in background
-              run: |
-                  npm run start &
-                  sleep 5
-            - name: Curl test
-              run: curl http://localhost:3000/api/movies
+      - name: SonarCloud Scan
+        uses: SonarSource/sonarcloud-github-action@v2
+        env:
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+
+      - name: E2E / Contract tests
+        run: npm run test:e2e
+
+      - name: Start server in background
+        run: |
+          npm run start &
+          sleep 5
+      - name: Curl test
+        run: curl http://localhost:3000/api/movies

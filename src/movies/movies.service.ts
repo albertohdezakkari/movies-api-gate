@@ -18,6 +18,7 @@ export class MoviesService {
     return movies.map((m) => ({ ...m, title: m.title.toUpperCase() }));
   }*/
 
+
   /*async listMovies(): Promise<Movie[]> {
     return 'hola' as any;
   }*/
